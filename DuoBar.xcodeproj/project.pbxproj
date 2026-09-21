@@ -178,6 +178,7 @@
 				Base,
 				"zh-Hans",
 				"zh-Hant",
+				ru,
 			);
 			mainGroup = A10000000000000000000002;
 			preferredProjectObjectVersion = 77;
