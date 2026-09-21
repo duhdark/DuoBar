@@ -2,12 +2,14 @@ import AppKit
 import SwiftUI
 
 @MainActor
-final class MenuBarController: NSObject {
+final class MenuBarController: NSObject, NSPopoverDelegate {
     private let statusItem: NSStatusItem
     private let popover = NSPopover()
     private let statusStore: SystemStatusStore
     private var hostingView: PassthroughHostingView<DuoStatusView>?
     private var lengthAnimationTimer: Timer?
+    private var outsideClickMonitor: Any?
+    private var appSwitchObserver: NSObjectProtocol?
     private var isInvalidated = false
 
     init(statusStore: SystemStatusStore) {
@@ -49,9 +51,12 @@ final class MenuBarController: NSObject {
         #if DEBUG
         popover.behavior = MarketingCaptureMode.isEnabled ? .applicationDefined : .semitransient
         #else
+        // Semitransient keeps the audio-output menu usable inside the popover.
+        // Outside clicks and app switches still close it via monitors below.
         popover.behavior = .semitransient
         #endif
         popover.animates = true
+        popover.delegate = self
         popover.contentSize = NSSize(width: 304, height: 316)
         popover.contentViewController = NSHostingController(
             rootView: StatusPopoverView(statusStore: statusStore) { [weak self] in
@@ -68,6 +73,52 @@ final class MenuBarController: NSObject {
         } else {
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
             popover.contentViewController?.view.window?.makeKey()
+        }
+    }
+
+    func popoverDidShow(_ notification: Notification) {
+        #if DEBUG
+        if MarketingCaptureMode.isEnabled { return }
+        #endif
+        startDismissMonitors()
+    }
+
+    func popoverDidClose(_ notification: Notification) {
+        stopDismissMonitors()
+    }
+
+    private func startDismissMonitors() {
+        stopDismissMonitors()
+
+        outsideClickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
+            Task { @MainActor in
+                self?.popover.performClose(nil)
+            }
+        }
+
+        appSwitchObserver = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didActivateApplicationNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            guard let app = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication else {
+                return
+            }
+            guard app.bundleIdentifier != Bundle.main.bundleIdentifier else { return }
+            Task { @MainActor in
+                self?.popover.performClose(nil)
+            }
+        }
+    }
+
+    private func stopDismissMonitors() {
+        if let outsideClickMonitor {
+            NSEvent.removeMonitor(outsideClickMonitor)
+            self.outsideClickMonitor = nil
+        }
+        if let appSwitchObserver {
+            NSWorkspace.shared.notificationCenter.removeObserver(appSwitchObserver)
+            self.appSwitchObserver = nil
         }
     }
 
@@ -118,6 +169,7 @@ final class MenuBarController: NSObject {
     func invalidate() {
         guard !isInvalidated else { return }
         isInvalidated = true
+        stopDismissMonitors()
         lengthAnimationTimer?.invalidate()
         lengthAnimationTimer = nil
         popover.performClose(nil)
@@ -128,6 +180,12 @@ final class MenuBarController: NSObject {
 
     deinit {
         lengthAnimationTimer?.invalidate()
+        if let outsideClickMonitor {
+            NSEvent.removeMonitor(outsideClickMonitor)
+        }
+        if let appSwitchObserver {
+            NSWorkspace.shared.notificationCenter.removeObserver(appSwitchObserver)
+        }
         if !isInvalidated {
             NSStatusBar.system.removeStatusItem(statusItem)
         }
