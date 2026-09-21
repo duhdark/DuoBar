@@ -56,7 +56,7 @@ DuoBar 1.0 redesigns the original beta around Battery, Network, and Volume. It a
 - Light and Dark Mode
 - Launch at Login
 - Universal 2: Apple Silicon and Intel support on macOS 13+
-- English, Russian, Simplified Chinese, and Traditional Chinese
+- English, Russian, Ukrainian, Simplified Chinese, and Traditional Chinese
 - Native Swift, SwiftUI, and AppKit
 - No Dock icon
 
