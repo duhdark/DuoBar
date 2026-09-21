@@ -23,7 +23,13 @@ final class LocalizationTests: XCTestCase {
         "Prefer Thermal",
         "%d%%",
         "volume %d percent",
-        "battery %d percent"
+        "battery %d percent",
+        "Sound Settings…",
+        "Select audio output",
+        "Open Wi-Fi Settings",
+        "Open Network Settings",
+        "Open Battery Settings",
+        "No output devices"
     ]
 
     func testAllSupportedLocalizationResourcesExist() {

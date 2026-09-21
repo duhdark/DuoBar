@@ -49,10 +49,10 @@ DuoBar 1.0 redesigns the original beta around Battery, Network, and Volume. It a
 - Adaptive Ring for desktop Macs: brightness baseline with automatic CPU, memory, and thermal pressure awareness
 - Automatic Wi-Fi, Ethernet, and offline network states
 - Four-dot live volume indicator
-- Compact volume slider and public Core Audio mute control where supported
+- Compact volume slider, public Core Audio mute, and output-device switching where supported
 - Temporary AirPods/headphones connection presentation
 - Adjustable menu-bar Icon Size
-- Compact custom popover: Network, Volume, Battery, Audio Output, Settings, and Quit
+- Compact custom popover: tap Network or Battery to open System Settings; Volume and Audio Output are controlled in the popover
 - Light and Dark Mode
 - Launch at Login
 - Universal 2: Apple Silicon and Intel support on macOS 13+
@@ -98,6 +98,7 @@ AirPods and Bluetooth audio classification is best-effort using public system me
 - The Wi-Fi network name may be unavailable without Location permission or when macOS withholds it.
 - Wi-Fi strength uses documented RSSI data and broad signal ranges; it does not reproduce Apple's private icon algorithm.
 - Some audio devices expose fixed or externally controlled volume.
+- Network and Battery rows open System Settings. DuoBar does not join Wi-Fi networks or pair Bluetooth devices.
 - Bluetooth audio and AirPods family detection is best-effort through public APIs.
 
 ## Build from source

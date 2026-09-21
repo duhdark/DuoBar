@@ -27,13 +27,19 @@ struct StatusPopoverView: View {
             }
             .padding(.horizontal, 2)
 
-            StatusRow(
-                symbol: networkSymbol,
-                title: localized("Network"),
-                detail: networkDetail,
-                stateText: networkState,
-                tint: .primary
-            )
+            Button(action: openNetworkSettings) {
+                StatusRow(
+                    symbol: networkSymbol,
+                    title: localized("Network"),
+                    detail: networkDetail,
+                    stateText: networkState,
+                    tint: .primary,
+                    accessory: .disclosure
+                )
+            }
+            .buttonStyle(.plain)
+            .frame(maxWidth: .infinity)
+            .accessibilityHint(networkSettingsHint)
 
             VolumeStatusRow(
                 volume: statusStore.status.audio.volume,
@@ -43,20 +49,29 @@ struct StatusPopoverView: View {
                 onSetMuted: statusStore.setMuted
             )
 
-            StatusRow(
-                symbol: batterySymbol,
-                title: localized("Battery"),
-                detail: batteryDetail,
-                stateText: batteryPercentage,
-                tint: .primary
-            )
+            Button(action: openBatterySettings) {
+                StatusRow(
+                    symbol: batterySymbol,
+                    title: localized("Battery"),
+                    detail: batteryDetail,
+                    stateText: batteryPercentage,
+                    tint: .primary,
+                    accessory: .disclosure
+                )
+            }
+            .buttonStyle(.plain)
+            .frame(maxWidth: .infinity)
+            .accessibilityHint(localized("Open Battery Settings"))
 
-            StatusRow(
+            AudioOutputRow(
                 symbol: audioOutputSymbol,
                 title: localized("Audio Output"),
                 detail: audioOutputDetail,
                 stateText: audioOutputState,
-                tint: .primary
+                outputs: statusStore.status.audio.selectableOutputs,
+                selectedUID: statusStore.status.audio.defaultOutput?.uid,
+                onSelect: { statusStore.setDefaultOutput(uid: $0) },
+                onOpenSoundSettings: openSoundSettings
             )
 
             #if DEBUG
@@ -131,6 +146,27 @@ struct StatusPopoverView: View {
             }
         }
         return nil
+    }
+
+    private var networkSettingsHint: String {
+        SystemSettingsOpener.pane(for: statusStore.status.network) == .network
+            ? localized("Open Network Settings")
+            : localized("Open Wi-Fi Settings")
+    }
+
+    private func openNetworkSettings() {
+        _ = SystemSettingsOpener.open(SystemSettingsOpener.pane(for: statusStore.status.network))
+        onClose()
+    }
+
+    private func openBatterySettings() {
+        _ = SystemSettingsOpener.open(.battery)
+        onClose()
+    }
+
+    private func openSoundSettings() {
+        _ = SystemSettingsOpener.open(.sound)
+        onClose()
     }
 
     private var networkSymbol: String {

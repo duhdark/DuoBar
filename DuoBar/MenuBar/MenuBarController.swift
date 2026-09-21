@@ -47,9 +47,9 @@ final class MenuBarController: NSObject {
 
     private func configurePopover() {
         #if DEBUG
-        popover.behavior = MarketingCaptureMode.isEnabled ? .applicationDefined : .transient
+        popover.behavior = MarketingCaptureMode.isEnabled ? .applicationDefined : .semitransient
         #else
-        popover.behavior = .transient
+        popover.behavior = .semitransient
         #endif
         popover.animates = true
         popover.contentSize = NSSize(width: 304, height: 316)

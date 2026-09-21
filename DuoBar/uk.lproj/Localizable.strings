@@ -77,3 +77,9 @@
 "volume unavailable" = "гучність недоступна";
 "battery unavailable" = "акумулятор недоступний";
 "%@, %@, %@" = "%@, %@, %@";
+"Sound Settings…" = "Параметри звуку…";
+"Select audio output" = "Вибрати аудіовихід";
+"Open Wi-Fi Settings" = "Відкрити параметри Wi‑Fi";
+"Open Network Settings" = "Відкрити параметри мережі";
+"Open Battery Settings" = "Відкрити параметри акумулятора";
+"No output devices" = "Немає пристроїв виводу";

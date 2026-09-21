@@ -77,3 +77,9 @@
 "volume unavailable" = "volume unavailable";
 "battery unavailable" = "battery unavailable";
 "%@, %@, %@" = "%@, %@, %@";
+"Sound Settings…" = "Sound Settings…";
+"Select audio output" = "Select audio output";
+"Open Wi-Fi Settings" = "Open Wi-Fi Settings";
+"Open Network Settings" = "Open Network Settings";
+"Open Battery Settings" = "Open Battery Settings";
+"No output devices" = "No output devices";
