@@ -91,13 +91,13 @@ DuoBar 常驻在菜单栏。图标中的三个部分分别表示：
 - 显示当前 Wi-Fi 网络名称（SSID）
 - 直接在 DuoBar 中打开或关闭 Wi-Fi
 - Wi-Fi、Ethernet 和离线网络状态
-- 音量状态、音量滑块和静音控制（取决于音频设备是否支持）
-- Audio Output 信息
+- 音量状态、音量滑块、静音控制和切换输出设备（取决于音频设备是否支持）
+- 在弹出菜单中选择 Audio Output
 - AirPods / 耳机连接时的临时状态展示
 - Open on Hover（悬停打开）
 - 可调节菜单栏图标大小
 - 改进的 Battery Ring、音量指示点和充电展示
-- English、简体中文、繁體中文
+- English、俄语、乌克兰语、简体中文、繁體中文
 
 ## 系统要求
 

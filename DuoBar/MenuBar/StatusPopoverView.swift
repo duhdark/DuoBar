@@ -57,7 +57,10 @@ struct StatusPopoverView: View {
                 outputs: statusStore.status.audio.selectableOutputs,
                 selectedUID: statusStore.status.audio.defaultOutput?.uid,
                 onSelect: { statusStore.setDefaultOutput(uid: $0) },
-                onOpenSoundSettings: openSoundSettings
+                onOpenSoundSettings: {
+                    _ = SystemSettingsOpener.openSoundSettings()
+                    onClose()
+                }
             )
 
             // Development diagnostics belong in the dedicated DEBUG diagnostics
@@ -127,11 +130,6 @@ struct StatusPopoverView: View {
             }
         }
         return nil
-    }
-
-    private func openSoundSettings() {
-        _ = SystemSettingsOpener.open(.sound)
-        onClose()
     }
 
     private var networkSymbol: String {

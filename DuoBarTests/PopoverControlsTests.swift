@@ -31,21 +31,9 @@ final class PopoverControlsTests: XCTestCase {
         XCTAssertEqual(audio.selectableOutputs.map(\.uid), ["built-in"])
     }
 
-    func testNetworkSettingsPaneFollowsTransport() {
-        XCTAssertEqual(SystemSettingsOpener.pane(for: wifiNetwork()), .wifi)
-        XCTAssertEqual(SystemSettingsOpener.pane(for: ethernetNetwork()), .network)
-        XCTAssertEqual(SystemSettingsOpener.pane(for: .unavailable), .wifi)
-    }
-
-    func testSystemSettingsURLsAreWellFormed() {
-        for pane in [SystemSettingsOpener.Pane.wifi, .network, .battery, .sound] {
-            let urls = SystemSettingsOpener.urlStrings(for: pane)
-            XCTAssertFalse(urls.isEmpty, "Missing URLs for \(pane)")
-            for string in urls {
-                XCTAssertNotNil(URL(string: string), string)
-                XCTAssertTrue(string.hasPrefix("x-apple.systempreferences:"), string)
-            }
-        }
+    func testSoundSettingsURLIsWellFormed() {
+        XCTAssertNotNil(URL(string: SystemSettingsOpener.soundURLString))
+        XCTAssertTrue(SystemSettingsOpener.soundURLString.hasPrefix("x-apple.systempreferences:"))
     }
 
     func testDebugAudioPickerExposesMultipleOutputs() {
@@ -80,29 +68,5 @@ final class PopoverControlsTests: XCTestCase {
         guard let uid = audio.defaultOutput?.uid else { return }
         XCTAssertTrue(audio.selectableOutputs.contains(where: { $0.uid == uid }))
         XCTAssertFalse(service.setDefaultOutput(uid: "missing-output-device"))
-    }
-
-    private func wifiNetwork() -> NetworkStatus {
-        NetworkStatus(
-            isAvailable: true,
-            isConnected: true,
-            transport: .wifi,
-            interfaceName: "en0",
-            isWiFiPoweredOn: true,
-            ssid: "Home",
-            rssi: -42
-        )
-    }
-
-    private func ethernetNetwork() -> NetworkStatus {
-        NetworkStatus(
-            isAvailable: true,
-            isConnected: true,
-            transport: .ethernet,
-            interfaceName: "en1",
-            isWiFiPoweredOn: true,
-            ssid: nil,
-            rssi: nil
-        )
     }
 }
