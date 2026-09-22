@@ -4,6 +4,41 @@ import XCTest
 @testable import DuoBar
 
 final class PopoverRenderTests: XCTestCase {
+    func testBatteryPopoverTrailingPercentageFollowsLivePreference() {
+        let plugged = BatteryStatusRow(
+            battery: BatteryStatus(percentage: 96, isCharging: false, isPluggedIn: true, isFullyCharged: false, isAvailable: true),
+            showPercentage: true
+        )
+        XCTAssertEqual(plugged.trailingValue, localized("%d%%", 96))
+        XCTAssertEqual(plugged.detail, localized("Power adapter connected"))
+
+        let unplugged = BatteryStatusRow(
+            battery: BatteryStatus(percentage: 96, isCharging: false, isPluggedIn: false, isFullyCharged: false, isAvailable: true),
+            showPercentage: true
+        )
+        XCTAssertEqual(unplugged.trailingValue, localized("%d%%", 96))
+        XCTAssertEqual(unplugged.detail, localized("Using battery power"))
+
+        let hidden = BatteryStatusRow(
+            battery: BatteryStatus(percentage: 96, isCharging: false, isPluggedIn: true, isFullyCharged: false, isAvailable: true),
+            showPercentage: false
+        )
+        XCTAssertNil(hidden.trailingValue)
+    }
+
+    @MainActor
+    func testRenderActualBatteryStatusRowWithTrailingPercentage() throws {
+        let view = BatteryStatusRow(
+            battery: BatteryStatus(percentage: 96, isCharging: false, isPluggedIn: true, isFullyCharged: false, isAvailable: true),
+            showPercentage: true
+        )
+        .frame(width: 280)
+        .background(Color(nsColor: .windowBackgroundColor))
+        .environment(\.colorScheme, .dark)
+
+        try writePNG(view, named: "DuoBar-Battery-Row-96.png")
+    }
+
     @MainActor
     func testRenderFinalPopover() throws {
         let store = SystemStatusStore(startServices: false)
@@ -43,6 +78,46 @@ final class PopoverRenderTests: XCTestCase {
         .background(Color.black)
 
         try writePNG(view, named: "DuoBar-1.0-MenuBar-Comparison.png")
+    }
+
+    @MainActor
+    func testRenderLongLocalizedPopoverLabelsWithoutCollision() throws {
+        let longNetwork = StatusRow(
+            symbol: "wifi",
+            title: localized("Network"),
+            detail: "A-very-long-network-name-that-must-truncate-cleanly",
+            stateText: localized("Connected"),
+            tint: .primary,
+            trailing: AnyView(
+                Toggle(localized("Wi-Fi power"), isOn: .constant(true))
+                    .labelsHidden()
+                    .toggleStyle(.switch)
+            )
+        )
+        let longAudio = StatusRow(
+            symbol: "speaker.wave.2",
+            title: localized("Audio Output"),
+            detail: "Bluetooth Headphones — A Very Long Device Name",
+            stateText: localized("Bluetooth"),
+            tint: .primary
+        )
+        let view = VStack(spacing: 8) {
+            longNetwork
+            VolumeStatusRow(
+                volume: OutputVolumeStatus(level: 0.5, isMuted: false, isSettable: false),
+                hasOutputDevice: true,
+                playbackDeviceIdentifier: nil,
+                onSetVolume: { _ in true },
+                onSetMuted: { _ in true }
+            )
+            longAudio
+        }
+        .padding(12)
+        .frame(width: 304)
+        .background(Color(nsColor: .windowBackgroundColor))
+        .environment(\.colorScheme, .dark)
+
+        try writePNG(view, named: "DuoBar-Popover-Long-Labels.png")
     }
 
     @MainActor

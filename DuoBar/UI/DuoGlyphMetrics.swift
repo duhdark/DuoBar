@@ -5,16 +5,18 @@ struct DuoGlyphMetrics: Equatable {
         overallSize: 24,
         ringDiameter: 26.5,
         ringLineWidth: 2.8,
-        arcGap: 110,
+        arcGap: 120.2,
         wifiSymbolSize: 12.4,
         wifiYOffset: -1.25,
-        dotDiameter: 2.9,
-        dotSpacing: 1.8,
-        dotYOffset: 11.2
+        dotDiameter: 2.477173913,
+        dotSpacing: 1.766666667,
+        dotYOffset: 7.495652174
     )
 
     static let canvasSize: CGFloat = 32
     static let menuBarVerticalOffset: CGFloat = 1
+    static let referenceArcStrokeRatio: CGFloat = 18 / 230
+    private static let priorArcStrokeRatio: CGFloat = 2.8 / 26.5
 
     var overallSize: CGFloat
     var ringDiameter: CGFloat
@@ -29,6 +31,10 @@ struct DuoGlyphMetrics: Equatable {
     var ringYOffset: CGFloat = -0.8
     var statusItemHorizontalPadding: CGFloat = 3
 
+    var arcLineWidth: CGFloat {
+        ringLineWidth * Self.referenceArcStrokeRatio / Self.priorArcStrokeRatio
+    }
+    var ringPathDiameter: CGFloat { max(0, ringDiameter - arcLineWidth) }
     var arcStartDegrees: Double { 90 + arcGap / 2 }
     var arcEndDegrees: Double { 450 - arcGap / 2 }
     var statusItemWidth: CGFloat {

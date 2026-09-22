@@ -6,7 +6,9 @@
 
 **Three live states. One glyph. Less menu bar clutter.**
 
-[**Download DuoBar 1.1**](https://github.com/Mikeli7666/DuoBar/releases/latest) · [**Watch the Launch Film**](https://github.com/Mikeli7666/DuoBar/releases/download/v1.0.0/DuoBar-1.0-Official-Launch-Film.mp4)
+[English](README.md) | [简体中文](README.zh-CN.md)
+
+[**Download DuoBar 1.2.0**](https://github.com/Mikeli7666/DuoBar/releases/download/v1.2.0/DuoBar-1.2.0.dmg) · [**All Releases**](https://github.com/Mikeli7666/DuoBar/releases) · [**Report a Bug**](https://github.com/Mikeli7666/DuoBar/issues)
 
 macOS 13+ · Apple Silicon or Intel · Universal 2 · Free and Open Source
 
@@ -32,7 +34,7 @@ On MacBooks, the outer Battery Ring shows live battery level, a dynamic charging
 
 ## DuoBar on macOS
 
-DuoBar 1.0 redesigns the original beta around Battery, Network, and Volume. It adds Ethernet support, live volume and mute controls, Audio Output selection, and temporary AirPods/headphones connection presentation.
+The original 1.0 release established DuoBar's Battery, Network, and Volume foundation. The current 1.2 release builds on it with broader connectivity controls, refined visuals, and localization.
 
 <p align="center">
   <img src="marketing/1.0/DuoBar-1.0-Feature-Overview.png" alt="DuoBar 1.0 feature states: Default, Battery Low, Ethernet, AirPods Connected, and No Connection" width="100%">
@@ -47,12 +49,15 @@ DuoBar 1.0 redesigns the original beta around Battery, Network, and Volume. It a
 
 - Battery Ring with live level, dynamic charging bolt, low-battery state, and optional Battery Color Coding
 - Adaptive Ring for desktop Macs: brightness baseline with automatic CPU, memory, and thermal pressure awareness
+- Refined native Duo visual language, rounded Wi-Fi indicator, Battery Ring, volume indicators, and charging presentation
 - Automatic Wi-Fi, Ethernet, and offline network states
+- Wi-Fi network name display and public Wi-Fi power control
+- Optional Open on Hover popover behavior
 - Four-dot live volume indicator
 - Compact volume slider, public Core Audio mute, and output-device switching where supported
 - Temporary AirPods/headphones connection presentation
 - Adjustable menu-bar Icon Size
-- Compact custom popover: tap Network or Battery to open System Settings; Volume and Audio Output are controlled in the popover
+- Compact custom popover: Wi-Fi power, Volume, Audio Output selection, Battery, Settings, and Quit
 - Light and Dark Mode
 - Launch at Login
 - Universal 2: Apple Silicon and Intel support on macOS 13+
@@ -67,12 +72,13 @@ DuoBar 1.0 redesigns the original beta around Battery, Network, and Volume. It a
 
 ## Installation
 
-1. Download `DuoBar-1.1.0.dmg` from [GitHub Releases](https://github.com/Mikeli7666/DuoBar/releases).
+1. Download [DuoBar-1.2.0.dmg](https://github.com/Mikeli7666/DuoBar/releases/download/v1.2.0/DuoBar-1.2.0.dmg).
 2. Open the DMG and move DuoBar to Applications.
-3. Try opening DuoBar from Applications.
-4. If macOS blocks the first launch, right-click DuoBar and choose **Open**, or use **System Settings → Privacy & Security → Open Anyway**.
+3. Launch DuoBar.
 
-DuoBar 1.1.0 uses Hardened Runtime and ad-hoc signing. It is not yet Developer ID signed or notarized while Apple Developer Program enrollment is pending; notarized distribution is planned once it becomes available. Never disable Gatekeeper or System Integrity Protection to install DuoBar.
+DuoBar 1.2.0 uses Developer ID signing, Hardened Runtime, and Apple notarization. Never disable Gatekeeper or System Integrity Protection to install DuoBar.
+
+SHA-256: `186f68d4af1eb8f096cc854b8dadb113875c01ebdebfeca44ca248c50d92ad37`
 
 ## Permissions
 
@@ -98,7 +104,7 @@ AirPods and Bluetooth audio classification is best-effort using public system me
 - The Wi-Fi network name may be unavailable without Location permission or when macOS withholds it.
 - Wi-Fi strength uses documented RSSI data and broad signal ranges; it does not reproduce Apple's private icon algorithm.
 - Some audio devices expose fixed or externally controlled volume.
-- Network and Battery rows open System Settings. DuoBar does not join Wi-Fi networks or pair Bluetooth devices.
+- DuoBar does not join Wi-Fi networks or pair Bluetooth devices.
 - Bluetooth audio and AirPods family detection is best-effort through public APIs.
 
 ## Build from source

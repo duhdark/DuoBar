@@ -7,6 +7,8 @@
 "Large" = "Великий";
 "Adjust DuoBar to better match your menu bar." = "Підлаштуйте DuoBar під ваш рядок меню.";
 "General" = "Загальні";
+"Open on Hover" = "Відкривати при наведенні";
+"Open DuoBar when the pointer moves over the menu bar icon." = "Відкривати DuoBar, коли вказівник наводиться на значок у рядку меню.";
 "Launch DuoBar at login" = "Запускати DuoBar під час входу";
 "Approval is required in System Settings → General → Login Items." = "Потрібно дозволити в «Системних параметрах» → «Загальні» → «Об’єкти входу».";
 "Battery Ring" = "Кільце батареї";
@@ -35,10 +37,15 @@
 "Wi-Fi disabled" = "Wi-Fi вимкнено";
 "Not connected" = "Немає підключення";
 "Network name unavailable" = "Ім’я мережі недоступне";
+"Wi-Fi" = "Wi-Fi";
+"Wi-Fi power" = "Живлення Wi‑Fi";
+"Wi-Fi control unavailable" = "Керування Wi‑Fi недоступне";
+"Unable to change Wi-Fi power" = "Не вдалося змінити живлення Wi‑Fi";
 "Wired connection" = "Дротове підключення";
 "Active connection" = "Активне підключення";
 "Unavailable" = "Недоступно";
 "Offline" = "Не в мережі";
+"Off" = "Вимк.";
 "Ethernet" = "Ethernet";
 "Connected" = "Підключено";
 "No internal battery" = "Немає вбудованого акумулятора";

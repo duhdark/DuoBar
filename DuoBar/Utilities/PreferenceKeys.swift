@@ -5,6 +5,7 @@ enum PreferenceKeys {
     static let batteryColorCoding = "batteryColorCoding"
     static let adaptiveRingPriority = "adaptiveRingPriority"
     static let adaptiveRingColorCoding = "adaptiveRingColorCoding"
+    static let openOnHover = "duoBar.openOnHover"
 
     #if DEBUG
     static let simulateDesktopMac = "debug.simulateDesktopMac"

@@ -1,10 +1,12 @@
 #if DEBUG
+import AppKit
 import SwiftUI
 
 struct DebugPerformanceDiagnosticsView: View {
     @AppStorage(PreferenceKeys.simulateDesktopMac) private var simulateDesktopMac = false
     @AppStorage(PreferenceKeys.adaptiveRingColorCoding) private var adaptiveRingColorCoding = false
     @ObservedObject private var monitor = AdaptiveRingMonitor.shared
+    @ObservedObject private var ssidDiagnostics = SSIDDiagnosticCenter.shared
     @State private var monitorOwner = UUID()
     @StateObject private var visualLab = AdaptiveRingVisualLabController()
     private let deviceContextService = DeviceContextService()
@@ -95,6 +97,31 @@ struct DebugPerformanceDiagnosticsView: View {
             LabeledContent("Resolved color", value: colorPresentation.role.rawValue.capitalized)
             LabeledContent("Color intensity", value: String(format: "%.0f%%", colorPresentation.intensity * 100))
 
+            Section("Display Brightness · Hardware Diagnostic") {
+                if let diagnostic = monitor.brightnessSnapshot?.diagnostic {
+                    Text(diagnostic.copyableReport)
+                        .font(.system(.caption, design: .monospaced))
+                        .foregroundStyle(.secondary)
+                        .textSelection(.enabled)
+                } else {
+                    Text("Activate Adaptive Ring monitoring to capture a public IOKit brightness-read diagnostic.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            Section("Network / SSID · Hardware Diagnostic") {
+                Text(ssidDiagnosticReport)
+                    .font(.system(.caption, design: .monospaced))
+                    .foregroundStyle(.secondary)
+                    .textSelection(.enabled)
+
+                HStack {
+                    Button("Copy Report", action: copySSIDDiagnosticReport)
+                    Button("Refresh") { ssidDiagnostics.requestRefresh() }
+                }
+            }
+
             if visualLab.source == .synthetic {
                 Section("Synthetic input") {
                     LabeledContent("Scenario", value: monitor.debugScenarioLabel ?? "Pending")
@@ -156,6 +183,16 @@ struct DebugPerformanceDiagnosticsView: View {
 
     private var displayLabel: String {
         monitor.brightnessSnapshot?.mainDisplay.diagnosticLabel ?? "Sampling…"
+    }
+
+    private var ssidDiagnosticReport: String {
+        ssidDiagnostics.diagnostic?.copyableReport ?? "Waiting for the first NetworkService snapshot…"
+    }
+
+    private func copySSIDDiagnosticReport() {
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(ssidDiagnosticReport, forType: .string)
     }
 
     private var brightnessLabel: String {

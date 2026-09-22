@@ -13,6 +13,25 @@ struct StatusRow: View {
     let stateText: String
     let tint: Color
     var accessory: Accessory = .none
+    let trailing: AnyView?
+
+    init(
+        symbol: String,
+        title: String,
+        detail: String,
+        stateText: String,
+        tint: Color,
+        accessory: Accessory = .none,
+        trailing: AnyView? = nil
+    ) {
+        self.symbol = symbol
+        self.title = title
+        self.detail = detail
+        self.stateText = stateText
+        self.tint = tint
+        self.accessory = accessory
+        self.trailing = trailing
+    }
 
     var body: some View {
         HStack(spacing: 11) {
@@ -25,23 +44,36 @@ struct StatusRow: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text(title)
                     .font(.system(size: 12.5, weight: .semibold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.82)
                 Text(detail)
                     .font(.system(size: 10.5))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
+                    .truncationMode(.middle)
+                    .minimumScaleFactor(0.72)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .layoutPriority(1)
 
             Spacer(minLength: 8)
 
-            Text(stateText)
-                .font(.system(size: 10.5, weight: .medium, design: .rounded))
-                .foregroundStyle(.secondary)
-                .monospacedDigit()
+            if let trailing {
+                trailing
+            } else {
+                Text(stateText)
+                    .font(.system(size: 10.5, weight: .medium, design: .rounded))
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.72)
+                    .layoutPriority(0)
 
-            if let accessorySymbol {
-                Image(systemName: accessorySymbol)
-                    .font(.system(size: 9, weight: .semibold))
-                    .foregroundStyle(.tertiary)
+                if let accessorySymbol {
+                    Image(systemName: accessorySymbol)
+                        .font(.system(size: 9, weight: .semibold))
+                        .foregroundStyle(.tertiary)
+                }
             }
         }
         .padding(.horizontal, 10)

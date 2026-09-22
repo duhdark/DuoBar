@@ -7,6 +7,8 @@
 "Large" = "Large";
 "Adjust DuoBar to better match your menu bar." = "Adjust DuoBar to better match your menu bar.";
 "General" = "General";
+"Open on Hover" = "Open on Hover";
+"Open DuoBar when the pointer moves over the menu bar icon." = "Open DuoBar when the pointer moves over the menu bar icon.";
 "Launch DuoBar at login" = "Launch DuoBar at login";
 "Approval is required in System Settings → General → Login Items." = "Approval is required in System Settings → General → Login Items.";
 "Battery Ring" = "Battery Ring";
@@ -35,10 +37,15 @@
 "Wi-Fi disabled" = "Wi-Fi disabled";
 "Not connected" = "Not connected";
 "Network name unavailable" = "Network name unavailable";
+"Wi-Fi" = "Wi-Fi";
+"Wi-Fi power" = "Wi-Fi power";
+"Wi-Fi control unavailable" = "Wi-Fi control unavailable";
+"Unable to change Wi-Fi power" = "Unable to change Wi-Fi power";
 "Wired connection" = "Wired connection";
 "Active connection" = "Active connection";
 "Unavailable" = "Unavailable";
 "Offline" = "Offline";
+"Off" = "Off";
 "Ethernet" = "Ethernet";
 "Connected" = "Connected";
 "No internal battery" = "No internal battery";

@@ -19,6 +19,7 @@ enum DebugBatteryLevel: Int, CaseIterable, Identifiable {
 
 enum DebugPowerState: String, CaseIterable, Identifiable {
     case charging = "Charging"
+    case pluggedPaused = "Plugged / Charging Paused"
     case notCharging = "Not Charging"
     case fullConnected = "Full + Connected"
 

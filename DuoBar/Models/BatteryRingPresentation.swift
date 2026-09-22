@@ -2,8 +2,7 @@ import Foundation
 
 enum BatteryBoltPlacement: Equatable, Sendable {
     case none
-    case ringEndpoint
-    case ringMidpoint
+    case topGap
 }
 
 enum BatteryRingColorRole: Equatable, Sendable {
@@ -25,23 +24,14 @@ struct BatteryRingPresentation: Equatable, Sendable {
             return BatteryRingPresentation(boltPlacement: .none, colorRole: .monochrome)
         }
 
-        let boltPlacement: BatteryBoltPlacement
-        if battery.isFullyCharged && battery.isPluggedIn {
-            boltPlacement = .ringMidpoint
-        } else if battery.isCharging {
-            boltPlacement = .ringEndpoint
-        } else {
-            boltPlacement = .none
-        }
+        let boltPlacement: BatteryBoltPlacement = battery.isPluggedIn ? .topGap : .none
 
         guard colorCodingEnabled else {
             return BatteryRingPresentation(boltPlacement: boltPlacement, colorRole: .monochrome)
         }
 
         let colorRole: BatteryRingColorRole
-        if battery.isFullyCharged && battery.isPluggedIn {
-            colorRole = .monochrome
-        } else if battery.isCharging {
+        if battery.isPluggedIn {
             colorRole = .charging
         } else if battery.isLowPowerModeEnabled {
             colorRole = .lowPowerMode

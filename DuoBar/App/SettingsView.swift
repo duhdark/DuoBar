@@ -8,6 +8,7 @@ struct SettingsView: View {
     @AppStorage(PreferenceKeys.batteryColorCoding) private var batteryColorCoding = false
     @AppStorage(PreferenceKeys.adaptiveRingPriority) private var adaptiveRingPriorityRaw = PerformancePreference.automatic.rawValue
     @AppStorage(PreferenceKeys.adaptiveRingColorCoding) private var adaptiveRingColorCoding = false
+    @AppStorage(PreferenceKeys.openOnHover) private var openOnHover = false
     @StateObject private var launchAtLogin = LaunchAtLoginService()
     @ObservedObject private var adaptiveRingMonitor = AdaptiveRingMonitor.shared
     private let deviceContextService = DeviceContextService()
@@ -45,6 +46,14 @@ struct SettingsView: View {
             }
 
             Section(localized("General")) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Toggle(localized("Open on Hover"), isOn: $openOnHover)
+                        .toggleStyle(.switch)
+                    Text(localized("Open DuoBar when the pointer moves over the menu bar icon."))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
                 Toggle(
                     localized("Launch DuoBar at login"),
                     isOn: Binding(

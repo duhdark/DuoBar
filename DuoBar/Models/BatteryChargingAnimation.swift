@@ -1,0 +1,85 @@
+import CoreGraphics
+import Foundation
+
+struct BatteryChargingAnimationSnapshot: Equatable {
+    let boltProgress: Double
+    let trackProgress: Double
+    let colorMix: Double
+}
+
+enum BatteryChargingAnimationProfile {
+    // Measured at the source recording's 60 fps presentation cadence.
+    static let sourceFrameRate = 60.0
+    static let boltEntranceFrameCount = 26
+    static let trackEntranceFrameCount = 18
+    static let colorDelayFrameCount = 42
+    static let colorTransitionFrameCount = 19
+    static let exitFrameCount = 22
+
+    static let boltEntranceDuration = Double(boltEntranceFrameCount) / sourceFrameRate
+    static let trackEntranceDuration = Double(trackEntranceFrameCount) / sourceFrameRate
+    static let colorDelay = Double(colorDelayFrameCount) / sourceFrameRate
+    static let colorTransitionDuration = Double(colorTransitionFrameCount) / sourceFrameRate
+    static let exitDuration = Double(exitFrameCount) / sourceFrameRate
+    static let entranceDuration = colorDelay + colorTransitionDuration
+
+    // The stable reference bolt measured 33 x 50 px against a 230 px outer ring.
+    // SF Symbols' bold bolt has a measured rendered-height/font-size ratio of 1.16.
+    static let boltFontSizeRatio: CGFloat = (50 / 1.16) / 230
+    static let boltOpacity = 1.0
+    static let boltRadialOffsetRatio: CGFloat = -24 / 230
+    static let boltHorizontalOffsetRatio: CGFloat = -3 / 230
+
+    static let inactiveTrackOpacity = 0.24
+
+    static func entranceSnapshot(elapsed: TimeInterval) -> BatteryChargingAnimationSnapshot {
+        let boltTime = clamped(elapsed / boltEntranceDuration)
+        let trackTime = clamped(elapsed / trackEntranceDuration)
+        let colorTime = clamped((elapsed - colorDelay) / colorTransitionDuration)
+        return BatteryChargingAnimationSnapshot(
+            boltProgress: cubicEaseOut(boltTime),
+            trackProgress: cubicEaseOut(trackTime),
+            colorMix: cubicEaseOut(colorTime)
+        )
+    }
+
+    static func exitSnapshot(elapsed: TimeInterval) -> BatteryChargingAnimationSnapshot {
+        let progress = smootherstep(clamped(elapsed / exitDuration))
+        return BatteryChargingAnimationSnapshot(
+            boltProgress: 1 - progress,
+            trackProgress: 1 - progress,
+            colorMix: 1 - progress
+        )
+    }
+
+    static func resolvedSnapshot(
+        showsBolt: Bool,
+        usesChargingColor: Bool,
+        reduceMotion: Bool
+    ) -> BatteryChargingAnimationSnapshot {
+        if reduceMotion {
+            return BatteryChargingAnimationSnapshot(
+                boltProgress: showsBolt ? 1 : 0,
+                trackProgress: showsBolt ? 1 : 0,
+                colorMix: usesChargingColor ? 1 : 0
+            )
+        }
+        return BatteryChargingAnimationSnapshot(
+            boltProgress: showsBolt ? 1 : 0,
+            trackProgress: showsBolt ? 1 : 0,
+            colorMix: usesChargingColor ? 1 : 0
+        )
+    }
+
+    private static func clamped(_ value: Double) -> Double {
+        min(max(value, 0), 1)
+    }
+
+    private static func cubicEaseOut(_ value: Double) -> Double {
+        1 - pow(1 - value, 3)
+    }
+
+    private static func smootherstep(_ value: Double) -> Double {
+        value * value * value * (value * (value * 6 - 15) + 10)
+    }
+}

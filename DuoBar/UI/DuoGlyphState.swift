@@ -23,7 +23,71 @@ enum DuoSemanticFeedback: Equatable {
     case audioConnected
 }
 
+enum DuoPersistentRingMode: Equatable {
+    case battery
+    case adaptive
+}
+
+struct DuoPersistentRingPresentation: Equatable {
+    let mode: DuoPersistentRingMode
+    let progress: Double
+    let opacity: Double
+    let batteryPresentation: BatteryRingPresentation
+
+    static func battery(
+        _ battery: BatteryStatus,
+        colorCodingEnabled: Bool
+    ) -> DuoPersistentRingPresentation {
+        let progress: Double
+        if battery.isFullyCharged {
+            progress = 1
+        } else if battery.isAvailable, let percentage = battery.percentage {
+            progress = min(max(Double(percentage) / 100, 0), 1)
+        } else {
+            progress = 1
+        }
+        return DuoPersistentRingPresentation(
+            mode: .battery,
+            progress: progress,
+            opacity: battery.isAvailable ? 1 : 0.22,
+            batteryPresentation: BatteryRingPresentation.resolve(
+                battery: battery,
+                colorCodingEnabled: colorCodingEnabled
+            )
+        )
+    }
+
+    static func adaptive(progress: Double) -> DuoPersistentRingPresentation {
+        DuoPersistentRingPresentation(
+            mode: .adaptive,
+            progress: min(max(progress, 0), 1),
+            opacity: 1,
+            batteryPresentation: BatteryRingPresentation(
+                boltPlacement: .none,
+                colorRole: .monochrome
+            )
+        )
+    }
+}
+
+enum DuoPersistentRingPresentationResolver {
+    static func resolve(
+        mode: DuoPersistentRingMode,
+        battery: BatteryStatus,
+        adaptiveProgress: Double,
+        batteryColorCodingEnabled: Bool
+    ) -> DuoPersistentRingPresentation {
+        switch mode {
+        case .battery:
+            return .battery(battery, colorCodingEnabled: batteryColorCodingEnabled)
+        case .adaptive:
+            return .adaptive(progress: adaptiveProgress)
+        }
+    }
+}
+
 struct DuoGlyphState: Equatable {
+    let ringPresentation: DuoPersistentRingPresentation
     let batteryProgress: Double
     let batteryArcOpacity: Double
     let isCharging: Bool
@@ -36,25 +100,20 @@ struct DuoGlyphState: Equatable {
     init(
         status: SystemStatus,
         presentation: StatusPresentation = .normal,
-        ringProgressOverride: Double? = nil,
+        ringPresentation: DuoPersistentRingPresentation? = nil,
         centerStateOverride: DuoCenterState? = nil,
         batteryColorCodingEnabled: Bool = false
     ) {
         let battery = status.battery
-        if let ringProgressOverride {
-            batteryProgress = min(max(ringProgressOverride, 0), 1)
-        } else if battery.isFullyCharged {
-            batteryProgress = 1
-        } else if battery.isAvailable, let percentage = battery.percentage {
-            batteryProgress = min(max(Double(percentage) / 100, 0), 1)
-        } else {
-            batteryProgress = 1
-        }
-        batteryArcOpacity = ringProgressOverride == nil ? (battery.isAvailable ? 1 : 0.22) : 1
-        isCharging = ringProgressOverride == nil && battery.isAvailable && battery.isCharging
-        batteryPresentation = ringProgressOverride == nil
-            ? BatteryRingPresentation.resolve(battery: battery, colorCodingEnabled: batteryColorCodingEnabled)
-            : BatteryRingPresentation(boltPlacement: .none, colorRole: .monochrome)
+        let resolvedRing = ringPresentation ?? .battery(
+            battery,
+            colorCodingEnabled: batteryColorCodingEnabled
+        )
+        self.ringPresentation = resolvedRing
+        batteryProgress = resolvedRing.progress
+        batteryArcOpacity = resolvedRing.opacity
+        isCharging = resolvedRing.mode == .battery && battery.isAvailable && battery.isCharging
+        batteryPresentation = resolvedRing.batteryPresentation
         volumeActiveDotCount = status.audio.volume.activeDotCount
 
         let normalCenter = centerStateOverride ?? Self.networkCenter(for: status.network)

@@ -7,6 +7,8 @@
 "Large" = "大";
 "Adjust DuoBar to better match your menu bar." = "调整 DuoBar 以更好地匹配菜单栏。";
 "General" = "通用";
+"Open on Hover" = "悬停时打开";
+"Open DuoBar when the pointer moves over the menu bar icon." = "将指针移到菜单栏图标上时打开 DuoBar。";
 "Launch DuoBar at login" = "登录时启动 DuoBar";
 "Approval is required in System Settings → General → Login Items." = "需要在“系统设置”→“通用”→“登录项”中批准。";
 "Battery Ring" = "Battery Ring";
@@ -35,10 +37,15 @@
 "Wi-Fi disabled" = "Wi‑Fi 已关闭";
 "Not connected" = "未连接";
 "Network name unavailable" = "网络名称不可用";
+"Wi-Fi" = "Wi-Fi";
+"Wi-Fi power" = "Wi-Fi 开关";
+"Wi-Fi control unavailable" = "Wi-Fi 控制不可用";
+"Unable to change Wi-Fi power" = "无法更改 Wi-Fi 开关";
 "Wired connection" = "有线连接";
 "Active connection" = "活动连接";
 "Unavailable" = "不可用";
 "Offline" = "离线";
+"Off" = "关闭";
 "Ethernet" = "以太网";
 "Connected" = "已连接";
 "No internal battery" = "没有内置电池";

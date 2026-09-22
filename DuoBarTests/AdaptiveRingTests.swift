@@ -69,6 +69,25 @@ final class AdaptiveRingTests: XCTestCase {
         XCTAssertEqual(DisplayBrightnessService.validatedBrightness(0), .available(0))
     }
 
+    func testLinearBrightnessFallbackIsUsedOnlyWhenStandardBrightnessIsUnavailable() {
+        XCTAssertEqual(
+            DisplayBrightnessService.resolvedBrightness(standard: 0.22, linearFallback: 0.81),
+            .available(0.22)
+        )
+        XCTAssertEqual(
+            DisplayBrightnessService.resolvedBrightness(standard: nil, linearFallback: 0.81),
+            .available(0.81)
+        )
+        XCTAssertEqual(
+            DisplayBrightnessService.resolvedBrightness(standard: .nan, linearFallback: 0.47),
+            .available(0.47)
+        )
+        XCTAssertEqual(
+            DisplayBrightnessService.resolvedBrightness(standard: nil, linearFallback: nil),
+            .unavailable
+        )
+    }
+
     func testMainDisplayIdentityRequiresUniqueMatch() {
         let exact = DisplayHardwareIdentity(vendorID: 10, productID: 20, serialNumber: 30)
         let other = DisplayHardwareIdentity(vendorID: 11, productID: 21, serialNumber: 31)
@@ -114,6 +133,57 @@ final class AdaptiveRingTests: XCTestCase {
         XCTAssertEqual(PerformanceDecisionEngine().candidate(for: input.snapshot(at: 0)).metric, .idle)
         XCTAssertEqual(resolve(input.brightness), .neutral)
         XCTAssertEqual(AdaptiveRingVisualTarget(state: .neutral).progress, 0.25)
+    }
+
+    func testBrightnessDiagnosticClassifiesPublicPipelineFailures() {
+        let valid = diagnosticParameter(result: 0, value: 0.6, valid: true)
+        let readFailure = diagnosticParameter(result: -536_870_212, value: nil, valid: false)
+        let invalid = diagnosticParameter(result: 0, value: 1.2, valid: false)
+
+        XCTAssertEqual(
+            diagnosticFailure(framebuffers: 0, selection: .noMatch),
+            .framebufferEnumeration
+        )
+        XCTAssertEqual(
+            diagnosticFailure(mainMetadataUsable: false, selection: .noMatch),
+            .mainDisplayMetadata
+        )
+        XCTAssertEqual(
+            diagnosticFailure(selection: .noMatch),
+            .displayIdentityMatch
+        )
+        XCTAssertEqual(
+            diagnosticFailure(selection: .ambiguousMatch),
+            .ambiguousDisplayMatch
+        )
+        XCTAssertEqual(
+            diagnosticFailure(selection: .uniqueMatch, displayServiceResolved: false),
+            .displayServiceResolution
+        )
+        XCTAssertEqual(
+            DisplayBrightnessDiagnostic.resolvedSource(
+                availability: .available(0.6),
+                standardBrightness: valid,
+                linearBrightness: .notAttempted
+            ),
+            .standard
+        )
+        XCTAssertEqual(
+            DisplayBrightnessDiagnostic.resolvedSource(
+                availability: .available(0.6),
+                standardBrightness: readFailure,
+                linearBrightness: valid
+            ),
+            .linear
+        )
+        XCTAssertEqual(
+            diagnosticFailure(selection: .uniqueMatch, standard: invalid, linear: readFailure),
+            .invalidBrightnessValue
+        )
+        XCTAssertEqual(
+            diagnosticFailure(selection: .uniqueMatch, standard: readFailure, linear: readFailure),
+            .standardBrightnessRead
+        )
     }
 
     func testSyntheticPerformanceInputsUseProductionEngineCandidates() {
@@ -213,6 +283,33 @@ final class AdaptiveRingTests: XCTestCase {
         monitor.setPreference(.memory)
         XCTAssertEqual(monitor.debugEngineGeneration, generation)
         XCTAssertEqual(monitor.performanceDecision.activeMetric, .cpu)
+    }
+
+    private func diagnosticParameter(result: Int32, value: Double?, valid: Bool) -> DisplayBrightnessParameterDiagnostic {
+        DisplayBrightnessParameterDiagnostic(
+            attempted: true,
+            ioReturn: result,
+            value: value,
+            isValid: valid
+        )
+    }
+
+    private func diagnosticFailure(
+        framebuffers: Int = 1,
+        mainMetadataUsable: Bool = true,
+        selection: DisplayBrightnessIdentitySelection,
+        displayServiceResolved: Bool? = true,
+        standard: DisplayBrightnessParameterDiagnostic = .notAttempted,
+        linear: DisplayBrightnessParameterDiagnostic = .notAttempted
+    ) -> DisplayBrightnessFailureStage {
+        DisplayBrightnessDiagnostic.classifyFailure(
+            framebufferCount: framebuffers,
+            mainDisplayMetadataIsUsable: mainMetadataUsable,
+            selection: selection,
+            displayServiceResolved: displayServiceResolved,
+            standardBrightness: standard,
+            linearBrightness: linear
+        )
     }
     #endif
 

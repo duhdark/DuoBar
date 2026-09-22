@@ -19,11 +19,15 @@ struct VolumeStatusRow: View {
                 HStack {
                     Text(localized("Volume"))
                         .font(.system(size: 12.5, weight: .semibold))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.82)
                     Spacer()
                     Text(stateText)
                         .font(.system(size: 10.5, weight: .medium, design: .rounded))
                         .foregroundStyle(.secondary)
                         .monospacedDigit()
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.72)
                 }
 
                 if volume.isSettable, let level = volume.level {
@@ -42,6 +46,8 @@ struct VolumeStatusRow: View {
                     Text(hasOutputDevice ? localized("Controlled by device") : localized("Volume unavailable"))
                         .font(.system(size: 10.5))
                         .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.72)
                 }
             }
         }

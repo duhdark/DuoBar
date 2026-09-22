@@ -13,7 +13,7 @@ final class DuoGlyphStateTests: XCTestCase {
     func testPerformanceOverrideReusesRingAndSuppressesBatteryChargingState() {
         let state = DuoGlyphState(
             status: makeStatus(batteryPercentage: 64, charging: true),
-            ringProgressOverride: 0.82,
+            ringPresentation: .adaptive(progress: 0.82),
             centerStateOverride: .performanceThermal
         )
         XCTAssertEqual(state.batteryProgress, 0.82, accuracy: 0.001)
@@ -24,7 +24,7 @@ final class DuoGlyphStateTests: XCTestCase {
     func testNeutralAdaptiveRingUsesSingleProgressArcWithoutChangingVolumeOrNetwork() {
         let state = DuoGlyphState(
             status: makeStatus(batteryPercentage: 64, charging: true),
-            ringProgressOverride: 0.25
+            ringPresentation: .adaptive(progress: 0.25)
         )
         XCTAssertEqual(state.batteryProgress, 0.25)
         XCTAssertEqual(state.batteryArcOpacity, 1)
@@ -47,7 +47,7 @@ final class DuoGlyphStateTests: XCTestCase {
         let state = DuoGlyphState(
             status: makeStatus(),
             presentation: .event(event),
-            ringProgressOverride: 0.7,
+            ringPresentation: .adaptive(progress: 0.7),
             centerStateOverride: .performanceCPU
         )
         XCTAssertEqual(state.centerState, .airPodsPro)
@@ -75,10 +75,73 @@ final class DuoGlyphStateTests: XCTestCase {
 
     func testNetworkTransportSelectsCorrectCenterState() {
         XCTAssertEqual(DuoGlyphState(status: makeStatus(network: wifi(rssi: -42))).centerState, .wifi(.strong))
+        XCTAssertEqual(DuoGlyphState(status: makeStatus(network: wifi(rssi: -70))).centerState, .wifi(.medium))
         XCTAssertEqual(DuoGlyphState(status: makeStatus(network: wifi(rssi: -84))).centerState, .wifi(.weak))
         XCTAssertEqual(DuoGlyphState(status: makeStatus(network: ethernet())).centerState, .ethernet)
         XCTAssertEqual(DuoGlyphState(status: makeStatus(network: offline())).centerState, .offline)
         XCTAssertEqual(DuoGlyphState(status: makeStatus(network: otherNetwork())).centerState, .other)
+    }
+
+    func testNativeWiFiBandsKeepTheCompleteStructureVisible() {
+        XCTAssertEqual(DuoWiFiVisualStyle.opacity(for: .core, level: .strong), 1)
+        XCTAssertEqual(DuoWiFiVisualStyle.opacity(for: .middle, level: .strong), 1)
+        XCTAssertEqual(DuoWiFiVisualStyle.opacity(for: .outer, level: .strong), 1)
+
+        XCTAssertEqual(DuoWiFiVisualStyle.opacity(for: .core, level: .medium), 1)
+        XCTAssertEqual(DuoWiFiVisualStyle.opacity(for: .middle, level: .medium), 1)
+        XCTAssertEqual(
+            DuoWiFiVisualStyle.opacity(for: .outer, level: .medium),
+            DuoNativeVisualConstants.inactiveElementOpacity
+        )
+
+        XCTAssertEqual(DuoWiFiVisualStyle.opacity(for: .core, level: .weak), 1)
+        XCTAssertEqual(
+            DuoWiFiVisualStyle.opacity(for: .middle, level: .weak),
+            DuoNativeVisualConstants.inactiveElementOpacity
+        )
+        XCTAssertEqual(
+            DuoWiFiVisualStyle.opacity(for: .outer, level: .weak),
+            DuoNativeVisualConstants.inactiveElementOpacity
+        )
+    }
+
+    func testUnavailableWiFiKeepsAllBandsStructurallyPresent() {
+        for band in DuoWiFiVisualStyle.Band.allCases {
+            XCTAssertEqual(
+                DuoWiFiVisualStyle.opacity(for: band, level: .unavailable),
+                DuoNativeVisualConstants.inactiveElementOpacity
+            )
+        }
+    }
+
+    func testWiFiGeometryMatchesMeasuredReferenceProportions() {
+        XCTAssertEqual(DuoWiFiReferenceGeometry.totalWidthRatio, 100.0 / 230.0, accuracy: 0.0001)
+        XCTAssertEqual(DuoWiFiReferenceGeometry.totalHeightRatio, 73.0 / 230.0, accuracy: 0.0001)
+        XCTAssertEqual(DuoWiFiReferenceGeometry.outerArcWidthRatio, 100.0 / 230.0, accuracy: 0.0001)
+        XCTAssertEqual(DuoWiFiReferenceGeometry.outerArcHeightRatio, 31.0 / 230.0, accuracy: 0.0001)
+        XCTAssertEqual(DuoWiFiReferenceGeometry.innerArcWidthRatio, 64.0 / 230.0, accuracy: 0.0001)
+        XCTAssertEqual(DuoWiFiReferenceGeometry.innerArcHeightRatio, 23.0 / 230.0, accuracy: 0.0001)
+        XCTAssertEqual(DuoWiFiReferenceGeometry.strokeWidthRatio, 14.5 / 230.0, accuracy: 0.0001)
+        XCTAssertEqual(DuoWiFiReferenceGeometry.coreWidthRatio, 29.0 / 230.0, accuracy: 0.0001)
+        XCTAssertEqual(DuoWiFiReferenceGeometry.coreHeightRatio, 21.0 / 230.0, accuracy: 0.0001)
+        XCTAssertEqual(DuoWiFiReferenceGeometry.outerToInnerCenterGapRatio, 11.0 / 230.0, accuracy: 0.0001)
+        XCTAssertEqual(DuoWiFiReferenceGeometry.innerToCoreCenterGapRatio, 12.0 / 230.0, accuracy: 0.0001)
+        XCTAssertEqual(DuoWiFiReferenceGeometry.opticalCenterYOffsetRatio, -15.0 / 230.0, accuracy: 0.0001)
+    }
+
+    func testWiFiOpticalAdjustmentKeepsMeasuredCenterAtEverySupportedScale() {
+        for scale in [0.80, 1.00, 1.05] {
+            let metrics = DuoGlyphMetrics.standard.scaled(by: scale)
+            let adjustment = DuoWiFiReferenceGeometry.verticalAdjustment(
+                ringDiameter: metrics.ringDiameter,
+                ringYOffset: metrics.ringYOffset,
+                centerYOffset: metrics.wifiYOffset
+            )
+            let resolvedCenter = metrics.wifiYOffset + adjustment
+            let expectedCenter = metrics.ringYOffset
+                + metrics.ringDiameter * DuoWiFiReferenceGeometry.opticalCenterYOffsetRatio
+            XCTAssertEqual(resolvedCenter, expectedCenter, accuracy: 0.0001)
+        }
     }
 
     func testVolumeLevelDrivesDotsAndBluetoothPowerDoesNot() {
@@ -91,6 +154,78 @@ final class DuoGlyphStateTests: XCTestCase {
         XCTAssertEqual(off.volumeActiveDotCount, 2)
         XCTAssertEqual(muted.volumeActiveDotCount, 0)
         XCTAssertNil(unknown.volumeActiveDotCount)
+    }
+
+    func testEveryVolumeBoundaryMapsToTheExistingFourPositions() {
+        let cases: [(Double, Int)] = [
+            (0, 0), (0.01, 1), (0.25, 1), (0.26, 2), (0.50, 2),
+            (0.51, 3), (0.75, 3), (0.76, 4), (1.00, 4),
+        ]
+        for (volume, expected) in cases {
+            XCTAssertEqual(makeStatus(volume: volume).audio.volume.activeDotCount, expected)
+        }
+        XCTAssertEqual(makeStatus(volume: 1, muted: true).audio.volume.activeDotCount, 0)
+    }
+
+    func testInactiveAndUnknownVolumeDotsRemainVisible() {
+        let metrics = DuoGlyphMetrics.standard
+        let muted = DuoDotRow(
+            activeCount: 0,
+            diameter: metrics.dotDiameter,
+            ringDiameter: metrics.ringDiameter,
+            rowCenterYOffset: metrics.dotYOffset,
+            animationsEnabled: false
+        )
+        let partial = DuoDotRow(
+            activeCount: 2,
+            diameter: metrics.dotDiameter,
+            ringDiameter: metrics.ringDiameter,
+            rowCenterYOffset: metrics.dotYOffset,
+            animationsEnabled: false
+        )
+        let unknown = DuoDotRow(
+            activeCount: nil,
+            diameter: metrics.dotDiameter,
+            ringDiameter: metrics.ringDiameter,
+            rowCenterYOffset: metrics.dotYOffset,
+            animationsEnabled: false
+        )
+
+        for index in 0..<4 {
+            XCTAssertEqual(muted.opacity(for: index), DuoVolumeIndicatorGeometry.inactiveOpacity)
+            XCTAssertEqual(unknown.opacity(for: index), DuoVolumeIndicatorGeometry.unknownOpacity)
+        }
+        XCTAssertEqual(partial.opacity(for: 0), DuoVolumeIndicatorGeometry.activeOpacity)
+        XCTAssertEqual(partial.opacity(for: 1), DuoVolumeIndicatorGeometry.activeOpacity)
+        XCTAssertEqual(partial.opacity(for: 2), DuoVolumeIndicatorGeometry.inactiveOpacity)
+        XCTAssertEqual(partial.opacity(for: 3), DuoVolumeIndicatorGeometry.inactiveOpacity)
+    }
+
+    func testVolumeGeometryMatchesMeasuredReferenceProportions() {
+        XCTAssertEqual(DuoVolumeIndicatorGeometry.indicatorDiameterRatio, 21.5 / 230.0, accuracy: 0.0001)
+        XCTAssertEqual(DuoVolumeIndicatorGeometry.rowWidthRatio, 132.0 / 230.0, accuracy: 0.0001)
+        XCTAssertEqual(DuoVolumeIndicatorGeometry.rowHeightRatio, 35.0 / 230.0, accuracy: 0.0001)
+        XCTAssertEqual(DuoVolumeIndicatorGeometry.outerEdgeGapRatio, 14.25 / 230.0, accuracy: 0.0001)
+        XCTAssertEqual(DuoVolumeIndicatorGeometry.innerEdgeGapRatio, 17.5 / 230.0, accuracy: 0.0001)
+        XCTAssertEqual(DuoVolumeIndicatorGeometry.wifiToRowGapRatio, 33.25 / 230.0, accuracy: 0.0001)
+        XCTAssertEqual(DuoVolumeIndicatorGeometry.rowToRingBottomGapRatio, 25.75 / 230.0, accuracy: 0.0001)
+        XCTAssertEqual(DuoVolumeIndicatorGeometry.centerXOffsets, [-55.25 / 230.0, -19.5 / 230.0, 19.5 / 230.0, 55.25 / 230.0])
+        XCTAssertEqual(DuoVolumeIndicatorGeometry.centerYOffsets, [-6.5 / 230.0, 6.5 / 230.0, 6.5 / 230.0, -6.5 / 230.0])
+        XCTAssertEqual(DuoVolumeIndicatorGeometry.activeOpacity, 1)
+        XCTAssertEqual(DuoVolumeIndicatorGeometry.inactiveOpacity, 0.30)
+        XCTAssertEqual(DuoVolumeIndicatorGeometry.unknownOpacity, 0.30)
+    }
+
+    func testNativeVisualMetricsScaleProportionallyAtEverySupportedEndpoint() {
+        let standard = DuoGlyphMetrics.standard
+        for scale in [0.80, 1.00, 1.05] {
+            let metrics = standard.scaled(by: scale)
+            XCTAssertEqual(metrics.ringDiameter / standard.ringDiameter, scale, accuracy: 0.0001)
+            XCTAssertEqual(metrics.ringLineWidth / standard.ringLineWidth, scale, accuracy: 0.0001)
+            XCTAssertEqual(metrics.wifiSymbolSize / standard.wifiSymbolSize, scale, accuracy: 0.0001)
+            XCTAssertEqual(metrics.dotDiameter / standard.dotDiameter, scale, accuracy: 0.0001)
+            XCTAssertEqual(metrics.dotSpacing / standard.dotSpacing, scale, accuracy: 0.0001)
+        }
     }
 
     func testAudioConnectionTemporarilyOverridesNetworkCenter() {

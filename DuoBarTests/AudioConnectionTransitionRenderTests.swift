@@ -208,10 +208,10 @@ final class AudioConnectionTransitionRenderTests: XCTestCase {
             DuoDotRow(
                 activeCount: volumeDots,
                 diameter: metrics.dotDiameter,
-                spacing: metrics.dotSpacing,
+                ringDiameter: metrics.ringDiameter,
+                rowCenterYOffset: metrics.dotYOffset,
                 animationsEnabled: false
             )
-            .offset(y: metrics.dotYOffset)
         }
         .frame(width: DuoGlyphMetrics.canvasSize, height: DuoGlyphMetrics.canvasSize)
         .scaleEffect(metrics.overallSize / DuoGlyphMetrics.canvasSize)

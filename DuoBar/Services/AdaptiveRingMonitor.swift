@@ -58,6 +58,29 @@ final class AdaptiveRingMonitor: ObservableObject {
         stop()
     }
 
+    /// Starts a new top-level Adaptive Ring session without carrying a prior
+    /// laptop session's sampled metric or decision into the next one.
+    /// Desktop ownership never needs this reset because its monitor remains active.
+    func resetForNewMonitoringSession() {
+        guard !isMonitoring else { return }
+        #if DEBUG
+        guard debugTestSource == .live else { return }
+        #endif
+        let preference = performanceEngine.preference
+        performanceEngine = PerformanceDecisionEngine(
+            thresholds: performanceEngine.thresholds,
+            preference: preference
+        )
+        performanceSnapshot = nil
+        performanceDecision = .idle
+        brightnessSnapshot = nil
+        state = .neutral
+        #if DEBUG
+        debugCandidates = []
+        debugCandidateDurations = [:]
+        #endif
+    }
+
     func setPreference(_ preference: PerformancePreference) {
         guard performanceEngine.preference != preference else { return }
         performanceEngine.preference = preference
@@ -74,11 +97,21 @@ final class AdaptiveRingMonitor: ObservableObject {
         if let step = debugSequenceStep {
             nextPerformance = AdaptiveRingSyntheticInput.idle.snapshot(at: timestamp)
             nextDecision = step.decision
-            nextBrightness = DisplayBrightnessSnapshot(mainDisplay: actualBrightness.mainDisplay, availability: step.brightness, sampledAt: timestamp)
+            nextBrightness = DisplayBrightnessSnapshot(
+                mainDisplay: actualBrightness.mainDisplay,
+                availability: step.brightness,
+                sampledAt: timestamp,
+                diagnostic: actualBrightness.diagnostic
+            )
         } else if let input = debugSyntheticInput {
             nextPerformance = input.snapshot(at: timestamp)
             nextDecision = performanceEngine.update(with: nextPerformance)
-            nextBrightness = DisplayBrightnessSnapshot(mainDisplay: actualBrightness.mainDisplay, availability: input.brightness, sampledAt: timestamp)
+            nextBrightness = DisplayBrightnessSnapshot(
+                mainDisplay: actualBrightness.mainDisplay,
+                availability: input.brightness,
+                sampledAt: timestamp,
+                diagnostic: actualBrightness.diagnostic
+            )
         } else {
             nextPerformance = performanceSampler.sample(at: timestamp)
             nextDecision = performanceEngine.update(with: nextPerformance)

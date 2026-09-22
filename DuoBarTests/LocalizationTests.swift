@@ -5,6 +5,11 @@ import XCTest
 final class LocalizationTests: XCTestCase {
     private let requiredKeys = [
         "Network",
+        "Wi-Fi",
+        "Wi-Fi power",
+        "Wi-Fi control unavailable",
+        "Unable to change Wi-Fi power",
+        "Off",
         "Volume",
         "Battery",
         "Audio Output",
@@ -12,6 +17,8 @@ final class LocalizationTests: XCTestCase {
         "Settings",
         "Quit DuoBar",
         "Icon Size",
+        "Open on Hover",
+        "Open DuoBar when the pointer moves over the menu bar icon.",
         "Launch DuoBar at login",
         "Controlled by device",
         "Charging",
